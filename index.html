@@ -12,22 +12,17 @@
                 var firstSheetName = workbook.SheetNames[0];
                 var worksheet = workbook.Sheets[firstSheetName];
 
-                // Convert sheet to JSON to filter blank rows
                 var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
                 var filteredData = jsonData.filter(row => row.some(filledCell));
 
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
                 var headerRowIndex = filteredData.findIndex((row, index) =>
                   row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
                 );
-                // Fallback
                 if (headerRowIndex === -1 || headerRowIndex > 25) {
                   headerRowIndex = 0;
                 }
 
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); 
                 csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
                 return csv;
             } catch (e) {
@@ -46,7 +41,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* Apply Arial Bold font globally */
         body {
             font-family: "Arial", sans-serif;
             font-weight: bold;
@@ -59,10 +53,10 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            -webkit-backdrop-filter: blur(8px); /* Increased blur */
-            backdrop-filter: blur(8px); /* Chrome, Edge, etc. */
-            filter: brightness(1.1); /* Subtle brightness for glow */
-            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); /* Glow effect */
+            -webkit-backdrop-filter: blur(8px); 
+            backdrop-filter: blur(8px); 
+            filter: brightness(1.1);
+            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); 
             position: relative;
         }
 
@@ -72,7 +66,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Fade-in Animation for Profile */
         .profile-section {
             opacity: 0;
             animation: fadeIn 1s ease-in forwards;
@@ -82,36 +75,30 @@
             to { opacity: 1; }
         }
 
-        /* Hover Effects for Buttons with Matching Glow */
         .link-button {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Discord Buttons (Blue Glow) */
         .link-button.bg-blue-500:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(59, 130, 246, 0.9);
         }
 
-        /* YouTube Button (Red Glow) */
         .link-button.bg-red-500:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(239, 68, 68, 0.9);
         }
 
-        /* Shops Button (Gray Glow) */
         .link-button.bg-gray-800:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(31, 41, 55, 0.9);
         }
 
-        /* Contact Button (Green Glow) */
         .link-button.bg-green-500:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(34, 197, 94, 0.9);
         }
 
-        /* Box for Page Views with fade, black font, no outline, more blur, and glow */
         .view-box {
             border: none;
             padding: 4px 8px;
@@ -121,12 +108,11 @@
             border-radius: 12px;
             display: inline-block;
             color: #000;
-            -webkit-backdrop-filter: blur(8px); /* Increased blur */
-            backdrop-filter: blur(8px); /* Chrome, Edge, etc. */
-            box-shadow: 0 0 20px rgba(0, 187, 255, 0.8); /* Glow effect */
+            -webkit-backdrop-filter: blur(8px); 
+            backdrop-filter: blur(8px); 
+            box-shadow: 0 0 20px rgba(0, 187, 255, 0.8);
         }
 
-        /* Click to Enter Overlay */
         .enter-overlay {
             position: fixed;
             top: 0;
@@ -141,21 +127,21 @@
             align-items: center;
             z-index: 1000;
             text-align: center;
-            -webkit-backdrop-filter: blur(20px); /* Heavy blur */
-            backdrop-filter: blur(20px); /* Chrome, Edge, etc. */
-            filter: brightness(1.1); /* Subtle brightness for glow */
-            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); /* Glow effect */
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px); 
+            filter: brightness(1.1); 
+            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); 
         }
 
         .enter-overlay button {
             font-size: 2rem;
             padding: 1rem 2rem;
             background-color: #fff;
-            border: none; /* Remove black border */
+            border: none; 
             border-radius: 12px;
             cursor: pointer;
             transition: transform 0.3s ease;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Add glow */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); 
         }
 
         .enter-overlay button:hover {
@@ -175,10 +161,9 @@
 
         .content > div {
             margin: 0 auto;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Added glow to white box */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); 
         }
 
-        /* Rain Effect */
         .rain {
             position: absolute;
             width: 2px;
@@ -192,7 +177,6 @@
             100% { transform: translateY(100vh); }
         }
 
-        /* Water Ripple Effect for Avatar */
         .avatar-container {
             position: relative;
             display: flex;
@@ -203,7 +187,7 @@
         }
 
         .avatar-container img {
-            width: 150px; /* Adjusted size for better fit */
+            width: 150px; 
             height: 150px;
             border-radius: 50%;
             object-fit: cover;
@@ -227,7 +211,7 @@
         }
 
         .avatar-container::after {
-            animation-delay: 1.5s; /* Staggered for continuous effect */
+            animation-delay: 1.5s; 
         }
 
         @keyframes rippleEffect {
@@ -235,7 +219,6 @@
             100% { width: 200px; height: 200px; opacity: 0; }
         }
 
-        /* Contact Menu Styles with Animation */
         .contact-menu {
             position: fixed;
             top: 0;
@@ -261,7 +244,7 @@
             position: relative;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
             animation: fadeInContent 0.3s ease-out forwards;
-            opacity: 0; /* Start hidden for animation */
+            opacity: 0; 
         }
 
         @keyframes fadeInContent {
@@ -289,7 +272,6 @@
             color: #333;
         }
 
-        /* Shops Menu Styles with Animation */
         .shops-menu {
             position: fixed;
             top: 0;
@@ -315,10 +297,9 @@
             position: relative;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
             animation: fadeInContent 0.3s ease-out forwards;
-            opacity: 0; /* Start hidden for animation */
+            opacity: 0; 
         }
 
-        /* Music Player Box */
         .music-box {
             position: fixed;
             top: 10px;
@@ -425,7 +406,6 @@
         </div>
 
         <script>
-            // View Counter Logic
             function updateViewCounter() {
                 let views = localStorage.getItem('pageViews') || 0;
                 views = parseInt(views) + 1;
@@ -433,39 +413,33 @@
                 document.getElementById('view-counter').textContent = views;
             }
 
-            // Rain Effect Logic
             function createRaindrop() {
                 const raindrop = document.createElement('div');
                 raindrop.className = 'rain';
                 raindrop.style.left = Math.random() * 100 + 'vw';
-                raindrop.style.animationDuration = Math.random() * 0.5 + 0.5 + 's'; // Random speed between 0.5s and 1s
+                raindrop.style.animationDuration = Math.random() * 0.5 + 0.5 + 's'; 
                 document.body.appendChild(raindrop);
 
-                // Remove raindrop when animation ends
                 raindrop.addEventListener('animationend', () => {
                     raindrop.remove();
                 });
             }
 
-            // Generate raindrops continuously
             setInterval(() => {
-                for (let i = 0; i < 10; i++) { // Create 10 raindrops at a time
+                for (let i = 0; i < 10; i++) { 
                     createRaindrop();
                 }
             }, 200);
 
-            // Ensure animations and counter are applied after page load
             window.addEventListener('load', () => {
                 document.querySelector('.profile-section').style.animation = 'fadeIn 1s ease-in forwards';
                 updateViewCounter();
-                // Auto-play the Spotify iframe on load
                 const iframe = document.querySelector('.music-box iframe');
                 if (iframe) {
-                    iframe.src += '&autoplay=1'; // Ensure autoplay is triggered
+                    iframe.src += '&autoplay=1'; 
                 }
             });
 
-            // Play/Pause Button Logic
             const playPauseBtn = document.getElementById('playPauseBtn');
             let isPlaying = true;
 
@@ -473,10 +447,10 @@
                 const iframe = document.querySelector('.music-box iframe');
                 if (isPlaying) {
                     playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    iframe.src = iframe.src.replace('&autoplay=1', '&autoplay=0'); // Pause by removing autoplay
+                    iframe.src = iframe.src.replace('&autoplay=1', '&autoplay=0'); 
                 } else {
                     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    iframe.src += '&autoplay=1'; // Resume by adding autoplay
+                    iframe.src += '&autoplay=1';
                 }
                 isPlaying = !isPlaying;
             });
