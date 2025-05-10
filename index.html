@@ -1,0 +1,486 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Bio Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Apply Arial Bold font globally */
+        body {
+            font-family: "Arial", sans-serif;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00bbff, #66d9ff, #0088cc);
+            background-size: 600% 600%;
+            animation: gradientShift 15s ease infinite;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-backdrop-filter: blur(8px); /* Increased blur */
+            backdrop-filter: blur(8px); /* Chrome, Edge, etc. */
+            filter: brightness(1.1); /* Subtle brightness for glow */
+            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); /* Glow effect */
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Fade-in Animation for Profile */
+        .profile-section {
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Hover Effects for Buttons with Matching Glow */
+        .link-button {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Discord Buttons (Blue Glow) */
+        .link-button.bg-blue-500:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(59, 130, 246, 0.9);
+        }
+
+        /* YouTube Button (Red Glow) */
+        .link-button.bg-red-500:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(239, 68, 68, 0.9);
+        }
+
+        /* Shops Button (Gray Glow) */
+        .link-button.bg-gray-800:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(31, 41, 55, 0.9);
+        }
+
+        /* Contact Button (Green Glow) */
+        .link-button.bg-green-500:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 30px rgba(34, 197, 94, 0.9);
+        }
+
+        /* Box for Page Views with fade, black font, no outline, more blur, and glow */
+        .view-box {
+            border: none;
+            padding: 4px 8px;
+            background: linear-gradient(45deg, #00bbff, #66d9ff, #0088cc);
+            background-size: 600% 600%;
+            animation: gradientShift 15s ease infinite;
+            border-radius: 12px;
+            display: inline-block;
+            color: #000;
+            -webkit-backdrop-filter: blur(8px); /* Increased blur */
+            backdrop-filter: blur(8px); /* Chrome, Edge, etc. */
+            box-shadow: 0 0 20px rgba(0, 187, 255, 0.8); /* Glow effect */
+        }
+
+        /* Click to Enter Overlay */
+        .enter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #00bbff, #66d9ff, #0088cc);
+            background-size: 600% 600%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+            -webkit-backdrop-filter: blur(20px); /* Heavy blur */
+            backdrop-filter: blur(20px); /* Chrome, Edge, etc. */
+            filter: brightness(1.1); /* Subtle brightness for glow */
+            box-shadow: 0 0 30px rgba(0, 187, 255, 0.9); /* Glow effect */
+        }
+
+        .enter-overlay button {
+            font-size: 2rem;
+            padding: 1rem 2rem;
+            background-color: #fff;
+            border: none; /* Remove black border */
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Add glow */
+        }
+
+        .enter-overlay button:hover {
+            transform: scale(1.1);
+        }
+
+        .content {
+            display: none;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .content > div {
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* Added glow to white box */
+        }
+
+        /* Rain Effect */
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            animation: fall 1s linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Water Ripple Effect for Avatar */
+        .avatar-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-container img {
+            width: 150px; /* Adjusted size for better fit */
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .avatar-container::before,
+        .avatar-container::after {
+            content: '';
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: rippleEffect 3s infinite;
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .avatar-container::before {
+            animation-delay: 0s;
+        }
+
+        .avatar-container::after {
+            animation-delay: 1.5s; /* Staggered for continuous effect */
+        }
+
+        @keyframes rippleEffect {
+            0% { width: 0; height: 0; opacity: 0.6; }
+            100% { width: 200px; height: 200px; opacity: 0; }
+        }
+
+        /* Contact Menu Styles with Animation */
+        .contact-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .contact-menu.active {
+            display: flex;
+        }
+
+        .contact-menu-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            animation: fadeInContent 0.3s ease-out forwards;
+            opacity: 0; /* Start hidden for animation */
+        }
+
+        @keyframes fadeInContent {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .contact-menu-content p {
+            margin: 0.5rem 0;
+            color: #333;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* Shops Menu Styles with Animation */
+        .shops-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .shops-menu.active {
+            display: flex;
+        }
+
+        .shops-menu-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            animation: fadeInContent 0.3s ease-out forwards;
+            opacity: 0; /* Start hidden for animation */
+        }
+
+        /* Music Player Box */
+        .music-box {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+        }
+
+        .music-box button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+            color: #333;
+            transition: transform 0.3s ease;
+        }
+
+        .music-box button:hover {
+            transform: scale(1.1);
+        }
+
+        .music-box iframe {
+            border: none;
+            width: 200px;
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="enter-overlay">
+        <button onclick="document.querySelector('.content').classList.add('active'); this.parentElement.style.display='none';">Click to Enter</button>
+    </div>
+    <div class="content">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <!-- Profile Section -->
+            <div class="flex flex-col items-center profile-section">
+                <div class="avatar-container">
+                    <img src="https://cdn.discordapp.com/attachments/1358657310314201158/1370500991795068958/images_1.jpg?ex=681fba03&is=681e6883&hm=f734c18e6f8dcc67f8b0f07cd1d43cb29c1c562179db634f8322af56d8b97948" alt="Profile Picture">
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">strats</h1>
+                <p class="text-gray-600 text-center">Content Creator | Developer | Squirtle glazer</p>
+                <div class="text-sm mt-2">
+                    <span class="view-box">Page Views: <span id="view-counter">0</span></span>
+                </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="mt-6 space-y-3">
+                <a href="https://cosmicalts.mysellauth.com/" target="_blank" class="flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg link-button">
+                    <i class="fab fa-discord mr-2"></i> Cosmic Alts
+                </a>
+                <a href="https://ghost-shops.mysellauth.com/" target="_blank" class="flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg link-button">
+                    <i class="fab fa-discord mr-2"></i> Ghost-Shop
+                </a>
+                <a href="https://www.youtube.com/@stratshax" target="_blank" class="flex items-center justify-center bg-red-500 text-white py-2 rounded-lg link-button">
+                    <i class="fab fa-youtube mr-2"></i> YouTube
+                </a>
+            </div>
+
+            <!-- Custom Links -->
+            <div class="mt-6 space-y-3">
+                <button onclick="document.querySelector('.shops-menu').classList.add('active')" class="flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg link-button w-full">
+                    <i class="fas fa-store mr-2"></i> Shops
+                </button>
+                <button onclick="document.querySelector('.contact-menu').classList.add('active')" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg link-button w-full">
+                    <i class="fas fa-envelope mr-2"></i> Contact Me
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <p class="text-center text-gray-500 text-sm mt-6">Built with ❤️ by You</p>
+        </div>
+
+        <!-- Contact Menu -->
+        <div class="contact-menu">
+            <div class="contact-menu-content">
+                <span class="close-button" onclick="document.querySelector('.contact-menu').classList.remove('active')">×</span>
+                <h2 class="text-xl font-bold mb-4">Contact Me</h2>
+                <p>Telegram: @stratsyt</p>
+                <p>Discord: @stratsyt</p>
+            </div>
+        </div>
+
+        <!-- Shops Menu -->
+        <div class="shops-menu">
+            <div class="shops-menu-content">
+                <span class="close-button" onclick="document.querySelector('.shops-menu').classList.remove('active')">×</span>
+                <h2 class="text-xl font-bold mb-4">Shops</h2>
+                <p><a href="https://cosmicalts.mysellauth.com/" target="_blank">Cosmic Alts</a></p>
+                <p><a href="https://ghost-shops.mysellauth.com/" target="_blank">Ghost-Shop</a></p>
+            </div>
+        </div>
+
+        <!-- Music Player Box -->
+        <div class="music-box">
+            <iframe src="https://open.spotify.com/embed/track/2vg7glr5QyeFPRES12Exx4?si=f9f1af81652846a4&auto_play=true" allow="autoplay"></iframe>
+            <button id="playPauseBtn"><i class="fas fa-pause"></i></button>
+        </div>
+
+        <script>
+            // View Counter Logic
+            function updateViewCounter() {
+                let views = localStorage.getItem('pageViews') || 0;
+                views = parseInt(views) + 1;
+                localStorage.setItem('pageViews', views);
+                document.getElementById('view-counter').textContent = views;
+            }
+
+            // Rain Effect Logic
+            function createRaindrop() {
+                const raindrop = document.createElement('div');
+                raindrop.className = 'rain';
+                raindrop.style.left = Math.random() * 100 + 'vw';
+                raindrop.style.animationDuration = Math.random() * 0.5 + 0.5 + 's'; // Random speed between 0.5s and 1s
+                document.body.appendChild(raindrop);
+
+                // Remove raindrop when animation ends
+                raindrop.addEventListener('animationend', () => {
+                    raindrop.remove();
+                });
+            }
+
+            // Generate raindrops continuously
+            setInterval(() => {
+                for (let i = 0; i < 10; i++) { // Create 10 raindrops at a time
+                    createRaindrop();
+                }
+            }, 200);
+
+            // Ensure animations and counter are applied after page load
+            window.addEventListener('load', () => {
+                document.querySelector('.profile-section').style.animation = 'fadeIn 1s ease-in forwards';
+                updateViewCounter();
+                // Auto-play the Spotify iframe on load
+                const iframe = document.querySelector('.music-box iframe');
+                if (iframe) {
+                    iframe.src += '&autoplay=1'; // Ensure autoplay is triggered
+                }
+            });
+
+            // Play/Pause Button Logic
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            let isPlaying = true;
+
+            playPauseBtn.addEventListener('click', () => {
+                const iframe = document.querySelector('.music-box iframe');
+                if (isPlaying) {
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    iframe.src = iframe.src.replace('&autoplay=1', '&autoplay=0'); // Pause by removing autoplay
+                } else {
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    iframe.src += '&autoplay=1'; // Resume by adding autoplay
+                }
+                isPlaying = !isPlaying;
+            });
+        </script>
+    </div>
+</body>
+</html>
